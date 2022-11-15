@@ -5,6 +5,7 @@ fetch("./header-nav-footer/header.html")
     header.innerHTML=data
 })
 
+
 const nav = document.querySelector("nav")
 fetch("./header-nav-footer/nav.html")
 .then(res=>res.text())
