@@ -26,7 +26,7 @@ getFileFromServer("path/to/file", function(text) {
 
 function httpGet(url) {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", url, false ); // false for synchronous request
+    xmlHttp.open( 'GET', url);
     xmlHttp.send( null );
     return xmlHttp.responseText;
 }
