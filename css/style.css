@@ -1,0 +1,50 @@
+* {
+  font-family: "Poppins", sans-serif;
+  text-decoration: none;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  height: auto;
+}
+
+html {
+  background-color: rgba(255, 247, 26, 0.213);
+}
+.button-link {
+  width : 1vw;
+}
+header {
+  margin: 1vw 15vw 1vw 15vw;
+  padding: 0%;
+  display: flex;
+  align-items: center;
+  border-radius: 0px;
+  gap: 3%;
+}
+@media screen and (max-width: 1024px) {
+  header {
+    padding: 0;
+    margin: 0;
+  }
+}
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+main,
+footer {
+  height: 100%;
+  color: white;
+  background-color: rgb(255, 245, 104);
+}
+
+footer {
+  text-align: center;
+  font-size: small;
+}
