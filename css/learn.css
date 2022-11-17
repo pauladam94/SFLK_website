@@ -4,19 +4,40 @@
 }
 
 main {
+  font-family: "Poppins", sans-serif;
   background-color : rgba(255, 247, 26, 0.2);
   margin : 0% 2% 0% 2%;
   padding : 2% 2% 2% 2%;
   border-radius : 2vw;
   line-height : 2vw ;
   letter-spacing :0.01vw ;
-  word-spacing : 0.5vw;
+  word-spacing : 0vw;
 }
 
 pre {
   background-color : rgba(255, 90, 148, 0.5);
   border-radius : 0.5vw;
   padding : 0% 0% 0% 1%;
+  
+}
+code {
+  font-family: "Gill Sans", sans-serif;
+}
+
+h2 {
+  font-size : x-large;
+}
+
+h3 {
+  font-size : large;
+}
+
+h4 {
+  font-size : medium;
+}
+
+h5 {
+  font-size : medium;
 }
 
 h2, h3, h4, h5 {

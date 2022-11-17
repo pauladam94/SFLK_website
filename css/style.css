@@ -1,5 +1,4 @@
 * {
-  font-family: "Poppins", sans-serif;
   text-decoration: none;
   align-items: center;
   justify-content: center;
@@ -18,6 +17,10 @@ html {
 .button-link {
   width : 1vw;
 }
+header, nav, footer {
+  font-family: "Poppins", sans-serif;
+}
+
 header {
   margin: 1vw 15vw 1vw 15vw;
   padding: 0%;
@@ -32,12 +35,6 @@ header {
     margin: 0;
   }
 }
-/*
-body {
-}
-
-main {
-}*/
 
 footer {
   text-align: center;
