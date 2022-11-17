@@ -1,0 +1,433 @@
+<h2 id="introduction">Introduction</h2>
+<p><em>SFLK</em> is an interpreted programming language. This repository contains the reference implementation.
+SFLK doesn&#39;t focus on being fast, a lot of languages are fast already. Instead, it tries new things, in the hope of being interesting. 20% serious, 80% weird stuff (this ratio is an estimation).
+Enjoy!</p>
+<h2 id="presentation">Presentation</h2>
+<p>The language is very unstable as it is still in very early development.
+Many many essential features are still missing.
+What is written here may not have beed updated properly (but all that is described here works or have worked in somepast commit, SFLK is not vaporware).</p>
+<h3 id="syntax">Syntax</h3>
+<h4 id="the-basics">The basics</h4>
+
+
+<pre><code class="lang-sflk"><span class="hljs-keyword">pr</span> <span class="hljs-string">"Hello world!"</span> <span class="hljs-keyword">nl</span>
+</code></pre>
+<p>This SFLK program contains two statements: a print statement and a newline statement. The whitespace is not significant in any way, except for separating tokens when necessary. There is no statement separator, which makes understanding poorly formatted SFLK programs
+pretty hard for one unknowing of all the statement syntaxes.</p>
+<p>An SFLK program is basically a sequence of statements, some of which may contain other statements or even generate code at run-time to allow for rich control flow. Most statements begin with a keyword (such as <code>pr</code>), most keywords are 2 characters long.</p>
+<p>Some statements expect stuff to follow some keywords, such as the print statement that expects an expression after its <code>pr</code> keyword. The newline statement does not.</p>
+<h4 id="expressions">Expressions</h4>
+
+<pre><code class="lang-sflk">pr <span class="hljs-number">6</span> + <span class="hljs-number">2</span> nl
+</code></pre>
+<p>This piece of code prints <code>8</code> as the expression <code>6 + 2</code> is evaluated during the execution of the statement <code>pr 6 + 2</code>.</p>
+<p>Binary operators such as <code>+</code> do not have a precedence, expressions such as <code>1 + 2 * 3 / 4 - 5</code> are really understood as <code>((((1 + 2) * 3) / 4) - 5)</code> and this is why a good formatting practice is to write these as <code>1 +2 *3 /4 -5</code>. Parenthesis are supported to allow some freedom on the shape of expressions.</p>
+<h4 id="comments">Comments</h4>
+<pre><code class="lang-sflk"># Comments are blocks delimited by hashes #
+#### Or by any number
+<span class="hljs-keyword">of</span> successive #s ####
+#! Hash+bang starts a line comment (unix shebang compatible)
+</code></pre>
+<h4 id="variables">Variables</h4>
+<pre><code class="lang-sflk">x! &lt; <span class="hljs-string">"So long"</span>
+x &lt; x + <span class="hljs-string">" gay "</span>
+<span class="hljs-keyword">pr</span> x + <span class="hljs-string">"Bowser"</span> <span class="hljs-keyword">nl</span>
+</code></pre>
+<p>Here, <code>x</code> is a variable that is being assigned a string object, and again, to finally be used in an expression that is printed.</p>
+<p>The <code>name &lt; expression</code> syntax is the one of the assignment statement. The expression is evaluated and the result is stored in the variable of the given name. The <code>name! &lt; expression</code> (note the <code>!</code>) declares the variable before doing the assignment, which is convenient for a first assignment since variables must be declared before being assigned values.</p>
+<p>To discard the expression final value instead of storing it, the evaluation statement can be used instead with the syntax <code>ev expression</code>.</p>
+<h4 id="code-blocks">Code blocks</h4>
+<pre><code class="lang-sflk"><span class="hljs-keyword">do</span> {<span class="hljs-keyword">pr</span> <span class="hljs-string">"uwu"</span> <span class="hljs-keyword">nl</span>}
+</code></pre>
+<p>This piece of code prints <code>uwu</code> as one might expect. The code block <code>{pr &quot;uwu&quot; nl}</code> is actually a code block literal that is an expression, as code blocks are objects just as integers and strings.</p>
+<pre><code class="lang-sflk">x! &lt; {<span class="hljs-keyword">pr</span> <span class="hljs-string">"uwu"</span>}
+x &lt; x + {<span class="hljs-keyword">nl</span>}
+<span class="hljs-keyword">do</span> x
+</code></pre>
+<p>This also prints <code>uwu</code> followed by a newline, as the code block executed in the do statement is the concatenation of the two literals <code>{pr &quot;uwu&quot;}</code> and <code>{nl}</code>.</p>
+<p>It is to be noted that <code>{pr &quot;uwu&quot;} + {nl}</code> is valid, but <code>{pr} + {&quot;uwu&quot; nl}</code> is not. <code>{pr}</code> is invalid syntax as a print statement expects an expression, and <code>{&quot;uwu&quot; nl}</code> is invalid syntax as <code>&quot;uwu&quot;</code> is not a statement. To be able to concatenate partial invalid code pieces as if they were strings, then just concatenate strings like so: <code>&quot;pr&quot; + &quot;\&quot;uwu\&quot; nl&quot;</code>, the resulting sting <code>&quot;pr\&quot;uwu\&quot; nl&quot;</code> happens to be valid SFLK code and can be executed as code when given to a do statement (or in any other place where a code block can be given). Beware of potential token concatenation though (<code>&quot;pr x&quot; + &quot;nl&quot;</code> evaluates into <code>&quot;pr xnl&quot;</code>, you see the issue).</p>
+<p>One might think of code blocks as functions or procedures or whatever. They are just pieces of code really. SFLK does not care (that much) about debugability or readability and intends to allow as much dynamic bullshit as possible, as demonstrated in the following section:</p>
+<h4 id="-operator"><code>&gt;</code> operator</h4>
+<pre><code class="lang-sflk"><span class="hljs-keyword">double</span>! &lt; {v &lt; v *<span class="hljs-number">2</span>}
+</code></pre>
+<p>Here, <code>double</code> is a code block that only consists of the statement <code>v &lt; v *2</code>. The variable <code>v</code> is special: it is the variable used to pass arguments to a code block, as well as to return a value.</p>
+<pre><code class="lang-sflk"><span class="hljs-keyword">pr</span> 4 &gt;double <span class="hljs-keyword">nl</span>
+</code></pre>
+<p>The evaluation of <code>4 &gt;double</code> goes like this: the value <code>double</code> is evaluated, as well as the value <code>4</code>. A new context (more on that later) is created for the execution of the code block. In this context, the variable <code>v</code> is initialized to <code>4</code> before the code block is executed. After the code block is executed, the value of <code>v</code> (here <code>8</code>) is extracted from the that context (that is discarded) to be the value to which the expression <code>4 &gt;double</code> evaluates to. So in the end <code>8</code> is printed.</p>
+<p>Now for a demonstration of how deranged is SFLK&#39;s dynamism, consider the following:</p>
+<pre><code class="lang-sflk"><span class="hljs-built_in">quad</span>! &lt; <span class="hljs-keyword">double</span> &gt;<span class="hljs-keyword">double</span>
+pr <span class="hljs-number">4</span> &gt;<span class="hljs-built_in">quad</span> nl
+</code></pre>
+<p>Yes, that is right, <code>16</code> is printed. <code>double &gt;double</code> takes advantage of the fact that <code>*2</code> is a valid operation on a code block (simply duplicating its sequence of statements). That produces a new code block that performs the action of <code>double</code> two times. Thanks to the design choice of making all the input and output of a block pass via the <code>v</code> variable, block concatenation has the same effect as composition, and the block assigned to <code>quad</code> makes sense: it doubles doubly (i.e. it quadruples).</p>
+<h4 id="unary-operators">Unary operators</h4>
+<pre><code class="lang-sflk">pr <span class="hljs-number">-1</span>      nl # <span class="hljs-number">-1</span> #
+pr <span class="hljs-number">-1</span>+<span class="hljs-number">1</span> +<span class="hljs-number">1</span> nl # <span class="hljs-number">-3</span> #
+pr <span class="hljs-number">-1</span>+<span class="hljs-number">1.</span>+<span class="hljs-number">1</span> nl # <span class="hljs-number">-1</span> #
+</code></pre>
+<p>Although <code>-</code> can be a binary operator, it can also be a unary operator. Since it only takes one argument (the expression on its right) then nothing is expected on its left. However, when does the expression it takes stops? The second line of the above examples shows that it does not stop until there is no more expression to take (the expression here could also be written <code>-(1 +1 +1)</code>).</p>
+<p>This could be controlled by writing expressions like <code>(-1 +1) +1</code>, but there is a more sugary syntax for this: <code>-1 +1. +1</code>. The <code>.</code> here makes the parser terminate the expression it is parsing, and this makes <code>1 +1</code> the argument of the <code>-</code> unary operator. The expression required by the print statement is not over though (the argument of <code>-</code> is a sub expression) and its parsing continues to include the last <code>+1</code>.</p>
+<p><code>-1.</code> is not to be thought as some kind of negative floating point literal. There is no such thing in SFLK.</p>
+<h4 id="some-other-stuff">Some other stuff</h4>
+<h5 id="numbers-are-arbitrarly-precise-fractions">Numbers are arbitrarly precise fractions</h5>
+<pre><code class="lang-sflk">pr <span class="hljs-number">333333333333333333333333333</span> / <span class="hljs-number">111111111111111111111111111</span> nl # <span class="hljs-number">3</span> #
+pr <span class="hljs-number">333</span> / <span class="hljs-number">111111111111111111111111111</span> nl # <span class="hljs-number">1</span>/<span class="hljs-number">333667000333667000333667</span> #
+# It works, you can check <span class="hljs-keyword">with</span> the `fractions` <span class="hljs-keyword">module</span> <span class="hljs-keyword">from</span> the Python standard library. #
+</code></pre>
+<p>There is no place for floating point rounding errors in SFLK. Every number is a fraction that is as precise as the RAM allows.</p>
+<h5 id="how-to-include-other-scripts">How to include other scripts</h5>
+<pre><code class="lang-sflk">dh <span class="hljs-keyword">fi</span> <span class="hljs-string">"file.sflk"</span>
+</code></pre>
+<p><code>fi</code> is a unary operator that takes a file path as its argument and evaluates into the content of the said file as a string. <code>dh</code> is the keyword of the do-here statement (which is like the do statement, but instead of executing code in a new context, code is executed in the current context, here). This piece of code executes the content of the given file in the current context.</p>
+<h5 id="what-are-contexts">What are contexts</h5>
+<p>(<em>TODO: Some explainations here are redundent with the &quot;Signals&quot; section. This redundency should be factored out.</em>)</p>
+<p>A context is a place where variables are defined. When doing <code>x! &lt; 8</code>, then a new variable named <code>x</code> is defined in the current context (if it was not already defined in that context). A simple assignment statement like <code>x &lt; 8</code> does not define <code>x</code> (note the missing <code>!</code>), it will just assign <code>8</code> to an already defined <code>x</code> variable. Which one ?</p>
+<p>Constexts are arranged as a tree. The context in which the execution takes place (the current context) is always a leaf. <code>x &lt; 8</code> will search for an <code>x</code> variable starting from the current context and going toward the root (ignoring the other branches) and will write <code>8</code> to the first it finds (if any). The same logic applies to reading values from variables, a statement like <code>pr x + y</code> will search an <code>x</code> variable to read a value from, and then the same goes for <code>y</code>, in a manner similar to a search performed by an assignment.</p>
+<pre><code class="lang-sflk">x! &lt; <span class="hljs-string">"uwu"</span>
+<span class="hljs-keyword">pr</span> x <span class="hljs-keyword">nl</span> # A #
+<span class="hljs-keyword">do</span> {
+    <span class="hljs-keyword">pr</span> x <span class="hljs-keyword">nl</span> # B #
+    x! &lt; <span class="hljs-string">"owo"</span>
+    <span class="hljs-keyword">pr</span> x <span class="hljs-keyword">nl</span> # C #
+}
+<span class="hljs-keyword">pr</span> x <span class="hljs-keyword">nl</span> # <span class="hljs-keyword">D</span> #
+</code></pre>
+<p>In this example, the print statement A prints <code>uwu</code> as it reads the variable <code>x</code> of the current context. Then, the do statement creates a new context that is a child (in the context tree) of the current context, then this child becomes the current context for the execution of the code block given to the do statement. Then, the print statement B is executed, and this time there is no <code>x</code> variable in the current context, but as said earlier, this is not a problem. The parent context has an <code>x</code> variable, so it is read, and the print statement B prints <code>uwu</code> like A. Then, the print statement C prints <code>owo</code> as now there is an <code>x</code> variable in the current context. Then, the code block executed by the do statement comes to an end, and that brings the second context (in which <code>x</code> has the value <code>&quot;owo&quot;</code>) to be discarded, the first context (in which <code>x</code> has the value <code>&quot;uwu&quot;</code>) becomes the current context again. Then, the print statement D prints <code>uwu</code> because we are back in the first context where the <code>x</code> variable is untouched.</p>
+<p>Should the <code>x! &lt; &quot;owo&quot;</code> statement in the do statement block be replaced with <code>x &lt; &quot;owo&quot;</code>, it would mean something else entierly. No <code>!</code> means that we are not defining a new variable, we are just assigning to an existing <code>x</code> variable, and here that would be the one that was initialized to <code>&quot;uwu&quot;</code>. So the print statement D would print <code>owo</code> instead of <code>uwu</code>.</p>
+<h5 id="lists">Lists</h5>
+<pre><code class="lang-sflk">ev (), <span class="hljs-number">3</span>,  <span class="hljs-number">8</span>, <span class="hljs-number">18</span>
+ev     <span class="hljs-number">3</span>,, <span class="hljs-number">8</span>, <span class="hljs-number">18</span>
+</code></pre>
+<p>The <code>()</code> literal evaluates to an object called nothing (every language has one of those). The <code>,</code> operator appends its operand to the list given on its left, and <code>()</code> acts as an empty list for <code>,</code>, so the first expression evaluates into a list containing <code>3</code>, <code>8</code> and <code>18</code>.</p>
+<p>The <code>,,</code> operator is sugar that makes <code>a,, b</code> evaluate like <code>(), a, b</code> would.</p>
+<pre><code class="lang-sflk">x &lt; <span class="hljs-string">"a"</span>,, <span class="hljs-string">"us"</span>, {<span class="hljs-keyword">pr</span> <span class="hljs-string">"mog"</span>}
+<span class="hljs-keyword">pr</span> x ix 0 <span class="hljs-keyword">do</span> x ix 2 <span class="hljs-keyword">pr</span> x ix 1 <span class="hljs-keyword">nl</span>
+</code></pre>
+<p>The <code>ix</code> binary operator allow access to a list element via its 0-based index. The above example also demonstrates that lists are not bound to contain only one type (this is a dynamic language after all, all the footguns of dynamic languages are to be supported by SFLK, it would be no fun otherwise).</p>
+<h5 id="nop">Nop</h5>
+<pre><code class="lang-sflk"><span class="hljs-attribute">np</span>
+</code></pre>
+<p>Does nothing on a Sunday morning. Also does nothing any other day.</p>
+<h5 id="if-then-else">If then else</h5>
+<pre><code class="lang-sflk"><span class="hljs-keyword">if</span> x
+th <span class="hljs-keyword">pr</span> <span class="hljs-string">"then"</span>
+el <span class="hljs-keyword">pr</span> <span class="hljs-string">"else"</span>
+</code></pre>
+<p>Here goes your if-then-else statement. Except SFLK wants to be special, so then and else branches are optional, there can be multiples of them, and they can be given in any order and even interleaved. The condition <code>x</code> is required though.</p>
+<h5 id="loop">Loop</h5>
+<pre><code class="lang-sflk"><span class="hljs-keyword">lp</span>
+<span class="hljs-keyword">wh</span> <span class="hljs-keyword">x</span>
+<span class="hljs-keyword">bd</span> dh {pr <span class="hljs-keyword">x</span> <span class="hljs-keyword">x</span> &lt; <span class="hljs-keyword">x</span>-<span class="hljs-number">1</span>}
+<span class="hljs-keyword">sp</span> pr <span class="hljs-string">", "</span>
+</code></pre>
+<p>Loop, while <code>x</code>, execute the body (<code>bd</code>) statement. In between executions of the body, execute the separator (<code>sp</code>) statement.
+Similar to the if statement, all these extensions are optional and can be given in any quantity and in any order.</p>
+<p>The separator extension to loop statements are imho a very cool feature that more languages should have. It does not cost a lot in terms of language design but allows removing a code duplication pattern that occurs in pieces of code such as the one featured in the above example. Usually the <code>pr x</code> part of the code is duplicated (one instance in the loop body, and one instance before or after the loop) to account for the fact that <em>n</em> elements are printed but only <em>n-1</em> commas, but the loop body runs either <em>n-1</em> or <em>n</em> times. Granted, duplication could be avoided in other ways, but still.</p>
+<h5 id="signals">Signals</h5>
+<p>(<em>TODO: Some explainations here are redundent with the &quot;What are contexts&quot; section. This redundency should be factored out.</em>)</p>
+<pre><code class="lang-sflk"><span class="hljs-keyword">pr</span> <span class="hljs-string">"h"</span> <span class="hljs-keyword">nl</span>
+</code></pre>
+<p>This actually does not <em>just</em> print stuff. Printing to the console is a side effect. Such side effects are frowned upon in some religious comunities. SFLK empowers the programmer to have complete control over these thanks to the following mechanism:</p>
+<p><code>pr &quot;h&quot;</code> actually sends a signal that travels through the context tree toward the root, and finally exits the isolated bubble where the execution takes place to reach the interpreter and ask for an interaction with the rest of the universe (here, the console). The interpreter then performs the required action, and potentially returns a result (but not in the case of a print statement, as there is nothing to answer from it). The execution then continues.</p>
+<p>Wtf? Indeed, here are more details: When something like a do statement is executed, the new context that is created to run a piece of code in is a sub-context of the current context. Thus all the contexts that exist at a given time are organized in a tree. If the do statement registers an interceptor with the <code>wi</code> (With Interceptor) extention, then the interceptor will then intercept all the signals that come from sub-contexts as they travel towards the root. The interceptor may examine the signal, let it pass, send another signal, discard it, whatever.</p>
+<p>There is no side effect that a context can do without all its parent contexts agreeing to it.</p>
+<p>The details of how this works are still pretty unstable, but to give an idea, here is an example:</p>
+<pre><code class="lang-sflk"><span class="hljs-keyword">do</span> {
+    pr <span class="hljs-string">"life in yellow~"</span> nl
+} <span class="hljs-keyword">wi</span> {
+    cy v
+    <span class="hljs-keyword">if</span> name - <span class="hljs-string">"print"</span>
+    <span class="hljs-keyword">el</span> pr <span class="hljs-string">"\e[33m"</span> + value + <span class="hljs-string">"\e[39m"</span>
+    <span class="hljs-keyword">th</span> <span class="hljs-keyword">em</span> v rs v
+}
+</code></pre>
+<p>The with-interceptor extention (<code>wi</code>) takes a code block that is registered in the sub-context as the interceptor. Intercepted signals are available for inspection in the <code>v</code> variable. The final value of the variable <code>v</code> will be what the intercepted signal returns.</p>
+<p>In the above example, only the print statements are tinkered with, and the other signals are handled by the statement <code>em v rs v</code> which re-emits them and forwards their result, so that everything happens as it they were not intercepted.</p>
+<p>Another use case for this feature:</p>
+<pre><code class="lang-sflk"><span class="hljs-keyword">do</span> fi <span class="hljs-string">"something.sflk"</span>
+<span class="hljs-keyword">wi</span> {
+    cy v
+    <span class="hljs-keyword">if</span> name - <span class="hljs-string">"input"</span>
+    <span class="hljs-keyword">el</span> v &lt; <span class="hljs-string">"Morbius"</span>
+    <span class="hljs-keyword">th</span> <span class="hljs-keyword">em</span> v rs v
+}
+</code></pre>
+<p>Here, we suppose that the file <code>something.sflk</code> contains an SFLK script that may at some point ask the user about its favorite movie (via the input expression <code>in</code> that evaluates into what the user types in the console). But here for some reason you don&#39;t want to have to type the name of your favorite movie every time you run the script (but you also don&#39;t want to modify the script). So you can write another script that executes <code>something.sflk</code> and makes the subscript behave as if you typed <code>Morbius</code> in response to every request, even though you are never requested to type anything anymore.</p>
+<p>Both these examples are pretty dumb but imho this is a very nice feature with truly useful use cases!</p>
+<h5 id="coming-soon">Coming soon</h5>
+<p>Coming soon!</p>
+<h3 id="binary-operator-behaviors">Binary operator behaviors</h3>
+<h4 id="plus-">Plus <code>+</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">number</td>
+<td style="text-align:center">number</td>
+<td>Arithmetic addition</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">string</td>
+<td>String concatenation</td>
+</tr>
+<tr>
+<td style="text-align:center">code block</td>
+<td style="text-align:center">code block</td>
+<td>Code block concatenation</td>
+</tr>
+</tbody>
+</table>
+<h4 id="minus-">Minus <code>-</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">number</td>
+<td style="text-align:center">number</td>
+<td>Arithmetic subtraction</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">string</td>
+<td>String comparison (0 iff equal)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="star-">Star <code>*</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">number</td>
+<td style="text-align:center">number</td>
+<td>Arithmetic multiplication</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">number</td>
+<td>String repetition</td>
+</tr>
+<tr>
+<td style="text-align:center">code block</td>
+<td style="text-align:center">number</td>
+<td>Code block repetition</td>
+</tr>
+</tbody>
+</table>
+<h4 id="slash-">Slash <code>/</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">number</td>
+<td style="text-align:center">number</td>
+<td>Arithmetic division</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">string</td>
+<td>Count non-overlapping occurrences of right in left</td>
+</tr>
+</tbody>
+</table>
+<h4 id="to-right-">To right <code>&gt;</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">any type</td>
+<td style="text-align:center">code block</td>
+<td>Execute right with left as <code>v</code>, evaluates to <code>v</code></td>
+</tr>
+<tr>
+<td style="text-align:center">number</td>
+<td style="text-align:center">list</td>
+<td>Same as <code>right ix left</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="comma-">Comma <code>,</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">nothing</td>
+<td style="text-align:center">any type</td>
+<td>A list with right in it</td>
+</tr>
+<tr>
+<td style="text-align:center">list</td>
+<td style="text-align:center">any type</td>
+<td>Left to which is appended right</td>
+</tr>
+</tbody>
+</table>
+<h4 id="double-comma-">Double comma <code>,,</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">any type</td>
+<td style="text-align:center">any type</td>
+<td>A list with left and right in it</td>
+</tr>
+</tbody>
+</table>
+<h4 id="index-ix-">Index <code>ix</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">left type</th>
+<th style="text-align:center">right type</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">list</td>
+<td style="text-align:center">number</td>
+<td>The right-th element of left</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">number</td>
+<td>The right-th character of string</td>
+</tr>
+</tbody>
+</table>
+<h3 id="unary-operators-behaviors">Unary operators behaviors</h3>
+<h4 id="unary-minus-">Unary minus <code>-</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">number</td>
+<td>Arithmetic negation</td>
+</tr>
+</tbody>
+</table>
+<h4 id="file-fi-">File <code>fi</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">right type</th>
+<th>behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">string</td>
+<td>Read file at path right</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ordered-od-">Ordered <code>od</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">right type</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">list</td>
+<td>if the list is ordered then <code>1</code> else <code>0</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="ordered-but-strictly-os-">Ordered but strictly <code>os</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">right type</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">list</td>
+<td>if the list is strictly ordered then <code>1</code> else <code>0</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="length-ln-">Length <code>ln</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">right type</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">list</td>
+<td>number of elements</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td>number of characters</td>
+</tr>
+</tbody>
+</table>
+<h2 id="contribute">Contribute</h2>
+<p>If you want to contribute in any way, please feel free to do so ^^.</p>
+<p>Note that there is a Discord server dedicated to the <em>development and use</em> of SFLK (how to get in there? we don&#39;t know haha, maybe ask for an invite in one way or another).</p>
+<h2 id="faq">FAQ</h2>
+<h3 id="what-does-sflk-means-">What does SFLK means?</h3>
+<p>Nothing haha. Similarly to LLVM, it is an acronym-like name without more meaning.</p>
+<h3 id="what-is-it-that-this-language-tries-to-achieve-">What is it that this language tries to achieve?</h3>
+<p>Well... You know...</p>
+<p>Ok, to be honest here, I have no idea where this is going. Designing a programming language is a common exercise that programmers are supposed to be capable of at some point, and it is plenty fun! However, it takes time, and life is short enough already, so I don&#39;t want to spend months to implement a clone of a successful language that will differentiate itself by just being less good than the original. I want to have fun programming in SFLK! This is all that matters, this is the only SFLK development principle.</p>
+<p>This is not an <a href="https://esolangs.org">esolang</a>, but it is not a serious C/Python-wannabe that has &quot;Safe, blazing fast🚀 system programming language&quot; as its description. There are thousands of new languages like this every month, most of which never really make it. Instead, this is an unsafe, slow scripting programming language that hopes to provide an interesting programming experience to people who are lost in life and end up trying it.</p>
+<h3 id="implemented-in-rust-huh-">Implemented in Rust huh?</h3>
+<p>Rust blah blah you know already.</p>
+<h3 id="is-there-a-roadmap-">Is there a roadmap?</h3>
+<p>Mmm, there is a <a href="TODO.md">TODO</a> list, which is better than nothing.</p>

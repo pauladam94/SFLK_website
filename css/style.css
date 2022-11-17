@@ -1,7 +1,6 @@
 * {
   font-family: "Poppins", sans-serif;
   text-decoration: none;
-  text-align: center;
   align-items: center;
   justify-content: center;
   outline: none;
@@ -10,6 +9,7 @@
   padding: 0;
   width: auto;
   height: auto;
+  color: black;
 }
 
 html {
@@ -32,17 +32,12 @@ header {
     margin: 0;
   }
 }
+/*
 body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
 }
-main,
-footer {
-  height: 100%;
-  color: white;
-  background-color: rgb(255, 245, 104);
-}
+
+main {
+}*/
 
 footer {
   text-align: center;

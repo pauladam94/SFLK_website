@@ -1,4 +1,28 @@
 #learn-button {
-  background-color: rgb(255, 90, 148);
+  background-color: rgb(255, 90, 148, 0.8);
   color: white;
+}
+
+main {
+  background-color : rgba(255, 247, 26, 0.2);
+  margin : 0% 2% 0% 2%;
+  padding : 2% 2% 2% 2%;
+  border-radius : 2vw;
+  line-height: 2vw ;
+  letter-spacing:0.01vw ;
+  word-spacing: 0.5vw;
+}
+
+pre {
+  background-color: rgba(255, 90, 148, 0.5);
+  border-radius: 0.5vw;
+}
+
+h2, h3, h4, h5 {
+  background-color: rgba(255, 90, 148, 0.25);
+  border-left: 0.5vw solid rgba(255, 90, 148, 0.5);
+}
+
+p {
+  text-justify: auto;
 }
