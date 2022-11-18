@@ -8,7 +8,6 @@
   padding: 0;
   width: auto;
   height: auto;
-  color: black;
 }
 
 html {
@@ -17,9 +16,7 @@ html {
 .button-link {
   width : 1vw;
 }
-header, nav, footer {
-  font-family: "Poppins", sans-serif;
-}
+
 
 header {
   margin: 1vw 15vw 1vw 15vw;
@@ -36,7 +33,4 @@ header {
   }
 }
 
-footer {
-  text-align: center;
-  font-size: small;
-}
+

@@ -1,3 +1,7 @@
+header, nav, footer {
+  font-family: "Poppins", sans-serif;
+}
+
 /*----------header----------*/
 .link-social {
   margin: 0;
@@ -5,7 +9,7 @@
 }
 
 .header-title {
-  border-bottom: 20px groove rgb(255, 90, 148);
+  border-bottom: 2vw groove rgb(255, 90, 148);
 }
 .name-title {
   margin: 0% 0% 0% 0%;
@@ -15,11 +19,6 @@
 }
 .logo-SFLK {
   width: 20vw;
-}
-@media screen and (max-width: 1024px) {
-  .logo-SFLK {
-    width: 40vw;
-  }
 }
 
 #github {
@@ -52,6 +51,12 @@
 }
 
 /*----------footer----------*/
+
+footer {
+  text-align: center;
+  font-size: 1vw;
+}
+
 .footer-text {
   color : black;
   margin: 0;

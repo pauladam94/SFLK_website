@@ -1,4 +1,5 @@
-// le fichier html obtenu par conersion markdown -> html
+// le fichier html obtenu par conversion du REAMDE.md -> README.html
+// Version du README du 17 Novembre 2022
 // via this site : https://markdowntohtml.com/
 
 const main = document.querySelector("main")

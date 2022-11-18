@@ -4,6 +4,7 @@
 }
 
 main {
+  font-size: 1.25vw;
   font-family: "Poppins", sans-serif;
   background-color : rgba(255, 247, 26, 0.2);
   margin : 0% 2% 0% 2%;
@@ -13,42 +14,51 @@ main {
   letter-spacing :0.01vw ;
   word-spacing : 0vw;
 }
+@media screen and (max-width: 1024px) {
+  main {
+    padding : 2% 2% 2% 2%;
+    margin: 0;
+    border-radius : 0;
+  }
+}
+
+
 
 pre {
   background-color : rgba(255, 90, 148, 0.5);
   border-radius : 0.5vw;
   padding : 0% 0% 0% 1%;
-  
 }
+
 code {
   font-family: "Gill Sans", sans-serif;
 }
 
 h2 {
-  font-size : x-large;
+  font-size : 2.3vw;
 }
 
 h3 {
-  font-size : large;
+  font-size : 2vw;
 }
 
 h4 {
-  font-size : medium;
+  font-size : 1.5vw;
 }
 
 h5 {
-  font-size : medium;
+  font-size : 1vw;
 }
 
 h2, h3, h4, h5 {
   background-color : rgba(255, 90, 148, 0.25);
   border-left : 0.5vw solid rgba(255, 90, 148, 0.5);
-  margin : 1% 0% 1% 0%;
-  padding : 0% 0% 0% 0.5%;
+  margin : 0.2% 0% 0.5% 0%;
+  padding : 0.3% 0% 0.3% 0.5%;
 }
 
 p {
-  text-justify: auto;
+  font-size: 1.2vw;
 }
 
 strong {
