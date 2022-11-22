@@ -13,9 +13,7 @@ A website to better understand the language.
 
 - gérer l'affichage des tableaux bien clean
 
-```ocaml
-let x = ref 4 in
+- changer lien du footer
 
+- tout mettre sur le github officiel du site web
 
-let y = 3 in
-```
